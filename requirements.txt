@@ -1,0 +1,24 @@
+
+streamlit>=1.24.0
+plotly>=5.15.0
+pandas>=1.5.0
+numpy>=1.21.0
+PyYAML>=6.0
+scipy>=1.7.0   
+
+# --- Waymo 数据提取 ---
+tfrecord
+waymo-open-dataset-tf-2-11-0==1.5.0
+protobuf>=3.19.0
+
+# --- nuScenes 数据提取 ---
+nuscenes-devkit>=1.1.9
+
+# --- nuPlan 数据提取 ---
+nuplan-devkit>=0.1.2
+
+
+
+pyproj>=3.0.0
+pyquaternion>=0.9.9
+Shapely>=1.8.0
