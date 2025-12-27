@@ -1,0 +1,47 @@
+# ==========================================
+# 软件全局配置 (Configuration)
+# ==========================================
+
+# 1. 页面基础设置
+app:
+  title: "Waymo HD Map Visualizer Pro"
+  icon: "🚘"
+  layout: "wide"
+
+# 2. 数据路径配置
+paths:
+  traj_file: "output/data_waymo.csv"
+  map_file: "output/map_waymo.csv"
+
+# 3. 视觉样式配置 (颜色与透明度)
+visuals:
+  background_color: "#0e1117"
+  plot_bgcolor: "#000000"
+  
+  # 地图元素颜色
+  map:
+    road_edge: "#F4D03F"
+    road_line: "rgba(200, 200, 200, 0.4)"
+  
+  # 车辆颜色
+  vehicles:
+    moving_color: "rgba(255, 217, 0, 0.8)"  # 亮黄色
+    static_color: "rgba(80, 80, 80, 0.5)"   # 深灰色
+    static_border: "#666666"
+  
+  # 弱势交通参与者 (VRU) 颜色
+  vrus:
+    color: "rgba(255, 85, 0, 0.9)"          # 亮橙色
+  
+  # 轨迹线颜色
+  trail:
+    color: "rgba(0, 242, 255, 0.2)"         # 青色
+
+# 4. 默认尺寸 (当数据缺失时使用)
+defaults:
+  car_length: 4.7
+  car_width: 2.0
+  ped_length: 0.6
+  ped_width: 0.6
+  cyc_length: 1.8
+  cyc_width: 0.6
