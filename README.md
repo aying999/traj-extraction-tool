@@ -10,7 +10,7 @@
 [![nuScenes](https://img.shields.io/badge/Dataset-nuScenes-FF0000?logo=scaleai&logoColor=white)](https://www.nuscenes.org/)
 [![nuPlan](https://img.shields.io/badge/Dataset-nuPlan-00A4E4?logo=scaleai&logoColor=white)](https://www.nuscenes.org/nuplan)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
 
 [English](README_EN.md) | [简体中文](README.md)
 
@@ -32,11 +32,11 @@
 
 1.  **场景初始化样本 (Scenario Initialization Samples)**
     - 自动截取 $T_0$ 时刻的静态道路拓扑与动态物体全域快照。
-    - 识别并分离**静态背景车**与**动态交互车**，支持仿真场景的**自动化冷启动**。
+    - 识别并分离**静态背景车**与**动态交互车**。
 
 2.  **交互动作-状态轨迹 (Interaction Action-State Trajectories)**
     - 生成时序对齐的车辆运动学状态（位置/速度/航向）。
-    - 结合时空几何特征，提取**变道**、**跟车**、**博弈**等高层语义动作标签。
+    - 结合时空几何特征，提取**变道**、**跟车**、**停车**等高层语义动作标签。
 
 ---
 
@@ -48,7 +48,7 @@
   - **配置驱动架构**：通过 `config.yaml` 灵活管理不同数据集的路径与提取参数。
 
 - **🏎️ 动静分离与 VRU 识别**
-  - **动态分层渲染**：视觉上分离静止车辆（灰色背景）与动态车辆（高亮黄色），彻底解决轨迹重影问题。
+  - **动态分层渲染**：视觉上分离静止车辆（灰色背景）与动态车辆（高亮黄色），解决轨迹重影问题。
   - **弱势群体关注**：专门针对 **行人 (Pedestrians)** 和 **骑行者 (Cyclists)** 进行高亮提取，辅助长尾场景挖掘。
 
 - **📊 高性能可视化验证终端**
@@ -91,33 +91,46 @@ pip install nuplan-devkit
 ```
 ## 🚀 使用教程 (Usage Guide)
 
-本项目采用 **配置驱动 (Configuration-Driven)** 的工作流，无需修改代码即可适配不同数据路径。
+### 1. 数据提取 (Data Extraction)
+针对不同的数据集，请运行对应的提取脚本，将原始数据转换为标准中间格式 (UIDM)。
 
-### 1. 配置数据源 (Configure Data Source)
-打开项目根目录下的 `config.yaml` 文件，找到 `extraction` 模块，填入您的原始数据路径。
+#### 🚗 Waymo Open Dataset (WOD)
+运行 Waymo 提取脚本：
+```bash
+python extract_waymo.py --input_path data/segment-123.tfrecord --output_dir output/
+```
+
+### 🏙️ nuScenes Dataset
+运行 nuScenes 提取脚本：
+```bash
+python extract_nuscenes.py --version v1.0-mini --dataroot data/nuscenes --output_dir output/
+```
+### 🗺️ nuPlan Dataset
+运行 nuPlan 提取脚本：
+```bash
+python extract_nuplan.py --dataset_root data/nuplan --map_root data/maps --output_dir output/
+```
+### 2. 可视化配置 (Visualization Configuration)
+在启动 app.py 之前，请修改根目录下的 config.yaml，指定您刚才提取好的 CSV 文件路径。
+
 
 ```yaml
-# config.yaml
-extraction:
-  # 原始数据路径 (支持单文件 .tfrecord 或文件夹)
-  input_path: "/path/to/your/waymo_data/segment-123.tfrecord"
-  
-  # 数据集类型 (目前支持 waymo)
-  dataset_type: "waymo"
-  
-  # 提取结果保存目录
-  output_dir: "output"
+# config.yaml 
+示例：加载 Waymo 数据
+paths:
+  traj_file: "output/data_waymo.csv"
+  map_file: "output/map_waymo.csv"
+示例：加载 nuScenes 数据
+paths:
+  traj_file: "output/data_nuscenes.csv"
+  map_file: "output/map_nuscenes.csv
 ```
-### 2. 运行提取工具 (Run Extraction Tool)
 
-运行提取脚本，将非结构化的二进制流转化为标准化的中间格式 (UIDM)。
-```yaml
-    python extract_waymo.py
-```
+
 ### 3. 启动可视化终端 (Launch Visualization)
 提取完成后，一键启动交互式验证平台。
-```yaml
-    streamlit run app.py --server.port 8501
+```bash
+streamlit run app.py --server.port 8501
 ```
 终端启动后，请在浏览器访问地址：🔗 Local URL: http://localhost:8501
 
