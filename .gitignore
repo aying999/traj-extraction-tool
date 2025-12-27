@@ -1,0 +1,5 @@
+nuscenes_data/
+waymo_open_dataset/
+*.tfrecord
+output/
+__pycache__/
