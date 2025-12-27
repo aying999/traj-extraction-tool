@@ -40,6 +40,10 @@
 
 ---
 
+
+
+
+
 ## ✨ 核心特性 (Key Features)
 
 - **🔄 多源异构数据归一化**
@@ -143,7 +147,19 @@ streamlit run app.py --server.port 8501
     底部数据面板：筛选特定 ID 查看微观状态数据。
 
 
+---
 
+## 📥 示例数据 (Sample Data)
+
+如果您不想配置复杂的提取环境，只想直接体验可视化功能，可以下载我们提供的以Waymo数据集为例的**已提取样本数据**。
+
+| 样本名称 (Sample Name) | 包含内容 (Contents) | 下载地址 (Download) |
+| :--- | :--- | :---: |
+| **Waymo Extracted Sample** | 📂 `data_waymo.csv` (轨迹)<br>📂 `map_waymo.csv` (地图) | [![Download](https://img.shields.io/badge/Quark_Cloud-Download-blue?logo=google-drive&logoColor=white)](https://pan.quark.cn/s/6bcc1b7923d2) |
+
+> **💡 使用方法**：下载解压后，请将两个 CSV 文件直接放入项目根目录的 `output/` 文件夹中，即可直接运行 `app.py`。
+
+---
 
 
 
