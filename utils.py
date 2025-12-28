@@ -16,12 +16,12 @@ def get_box_coords(row, config):
     """
     defaults = config['defaults']
     
-    # 1. 获取长宽
+
     L = row.get('length', 0)
     W = row.get('width', 0)
     obj_type = str(row.get('type', '')).upper()
     
-    # 尺寸兜底逻辑
+
     if pd.isna(L) or L < 0.1:
         if 'PEDESTRIAN' in obj_type: 
             L, W = defaults['ped_length'], defaults['ped_width']
@@ -32,7 +32,6 @@ def get_box_coords(row, config):
         
     cx, cy, theta = row['x'], row['y'], row['heading']
 
-    # 2. 旋转矩阵计算
     l2, w2 = L / 2.0, W / 2.0
     corners_rel = np.array([[-l2, -w2], [-l2, w2], [l2, w2], [l2, -w2]])
     c, s = np.cos(theta), np.sin(theta)
@@ -41,7 +40,7 @@ def get_box_coords(row, config):
     corners_rotated = corners_rel.dot(rot_matrix.T)
     corners_final = corners_rotated + np.array([cx, cy])
 
-    # 3. 闭合多边形
+
     x_coords = np.append(corners_final[:, 0], corners_final[0, 0])
     y_coords = np.append(corners_final[:, 1], corners_final[0, 1])
     

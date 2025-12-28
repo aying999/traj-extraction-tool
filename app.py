@@ -5,10 +5,6 @@ import numpy as np
 from utils import load_config, get_box_coords
 from data_processor import load_and_process_data, get_all_scenarios
 
-# ==========================================
-# 1. 初始化与配置加载
-# ==========================================
-# 加载配置
 cfg = load_config()
 
 st.set_page_config(
@@ -17,7 +13,7 @@ st.set_page_config(
     page_icon=cfg['app']['icon']
 )
 
-# 注入 CSS
+
 st.markdown(f"""
 <style>
     .stApp {{background-color: {cfg['visuals']['background_color']};}}
@@ -27,15 +23,13 @@ st.markdown(f"""
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# 2. 侧边栏与数据加载
-# ==========================================
+
 st.sidebar.title("🎛️ 控制中心")
 
 traj_path = cfg['paths']['traj_file']
 map_path = cfg['paths']['map_file']
 
-# 获取场景列表
+
 all_scenarios = get_all_scenarios(traj_path)
 if len(all_scenarios) == 0:
     st.error(f"❌ 找不到轨迹文件: {traj_path}")
@@ -43,20 +37,17 @@ if len(all_scenarios) == 0:
 
 selected_scenario = st.sidebar.selectbox("📍 选择场景 (Scenario ID)", all_scenarios)
 
-# 调用数据处理层
 with st.spinner('🚀 正在解析全量交通参与者...'):
     scene_traj, scene_map, static_df, moving_cars_df, vrus_df = \
         load_and_process_data(traj_path, map_path, selected_scenario)
 
 sorted_frame_ids = sorted(scene_traj['frame_id'].unique())
 
-# ==========================================
-# 3. 可视化绘图 (Plotly Logic)
-# ==========================================
+
 st.title(f"🚘 {cfg['app']['title']}")
 fig = go.Figure()
 
-# --- A. 地图层 ---
+
 if not scene_map.empty:
     for fid, group in scene_map[scene_map['type'] == 'ROAD_EDGE'].groupby('feature_id'):
         fig.add_trace(go.Scatter(
@@ -67,7 +58,7 @@ if not scene_map.empty:
             x=group.sort_values('order')['x'], y=group.sort_values('order')['y'],
             mode='lines', line=dict(color=cfg['visuals']['map']['road_line'], width=1, dash='dash'), hoverinfo='skip'))
 
-# --- B. 静态背景车 ---
+
 static_x, static_y, static_hover = [], [], []
 for _, row in static_df.iterrows():
     xs, ys = get_box_coords(row, cfg)
@@ -82,7 +73,7 @@ fig.add_trace(go.Scatter(
     hoverinfo='text', hovertext=static_hover, name='Static Vehicles'
 ))
 
-# --- C. 轨迹线 ---
+
 trail_x, trail_y = [], []
 all_active = pd.concat([moving_cars_df, vrus_df])
 for tid, group in all_active.groupby('track_id'):
@@ -95,8 +86,7 @@ fig.add_trace(go.Scatter(
     hoverinfo='skip', name='Trails'
 ))
 
-# --- D. 动画图层初始化 ---
-# 1. 移动车辆
+
 f0_cars = moving_cars_df[moving_cars_df['frame_id'] == sorted_frame_ids[0]]
 cx, cy = [], []
 for _, row in f0_cars.iterrows():
@@ -107,7 +97,7 @@ fig.add_trace(go.Scatter(
     fillcolor=cfg['visuals']['vehicles']['moving_color'], 
     line=dict(color='white', width=1), name='Moving Cars'))
 
-# 2. VRUs (行人/骑行者)
+
 f0_vrus = vrus_df[vrus_df['frame_id'] == sorted_frame_ids[0]]
 vx, vy = [], []
 for _, row in f0_vrus.iterrows():
@@ -118,10 +108,10 @@ fig.add_trace(go.Scatter(
     fillcolor=cfg['visuals']['vrus']['color'], 
     line=dict(color='white', width=1), name='Pedestrians/Cyclists'))
 
-# --- E. 构建每一帧 ---
+
 frames = []
 for fid in sorted_frame_ids:
-    # 车辆
+    
     f_cars = moving_cars_df[moving_cars_df['frame_id'] == fid]
     car_x, car_y, car_h = [], [], []
     for _, row in f_cars.iterrows():
@@ -129,7 +119,7 @@ for fid in sorted_frame_ids:
         car_x.extend(xs); car_x.append(None); car_y.extend(ys); car_y.append(None)
         car_h.extend([f"Car<br>ID: {row['track_id']}<br>V: {row['speed_kmh']:.1f}"]*5); car_h.append(None)
         
-    # VRUs
+    
     f_vrus = vrus_df[vrus_df['frame_id'] == fid]
     vru_x, vru_y, vru_h = [], [], []
     for _, row in f_vrus.iterrows():
@@ -159,9 +149,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-# ==========================================
-# 4. 统计面板
-# ==========================================
+
 st.markdown("### 📊 场景全量统计")
 
 duration = len(sorted_frame_ids) * 0.1
@@ -186,9 +174,7 @@ s2.metric("🅿️ 静止车辆 (Static)", f"{n_static}", delta="灰色背景", 
 s3.metric("🚶 行人 (Pedestrian)", f"{n_ped}", delta="橙色高亮", delta_color="inverse")
 s4.metric("🚲 骑行者 (Cyclist)", f"{n_cyc}", delta="橙色高亮", delta_color="inverse")
 
-# ==========================================
-# 5. 原始数据表
-# ==========================================
+
 st.markdown("---")
 st.subheader("📋 原始数据详情")
 with st.expander("🔍 展开数据表", expanded=False):

@@ -3,9 +3,7 @@ from nuscenes.nuscenes import NuScenes
 import os
 from tqdm import tqdm
 
-# --- 配置 ---
-# 确保这里指向包含 v1.0-mini 的父文件夹
-# 如果你按照之前的步骤建立了 nuscenes_data 文件夹，请保持如下：
+
 DATAROOT = "./nuscenes_data"  
 VERSION = "v1.0-mini"
 OUTPUT_FILE = "output/data_nuscenes.csv"
@@ -23,36 +21,34 @@ def extract_nuscenes():
     
     print("🚀 开始提取轨迹并计算差分速度...")
     
-    # 遍历所有场景
+    
     for scene in tqdm(nusc.scene):
         scene_id = scene['name']
         
-        # 获取该场景的第一帧
+       
         sample_token = scene['first_sample_token']
         frame_idx = 0
         
-        # 遍历场景中的每一帧
+       
         while sample_token:
             sample = nusc.get('sample', sample_token)
-            timestamp = sample['timestamp'] / 1e6 # 当前时间 (秒)
+            timestamp = sample['timestamp'] / 1e6 
             
-            # -------------------------------------------------
-            # 1. 提取自车 (Ego Vehicle) 并计算速度
-            # -------------------------------------------------
+           
             lidar_token = sample['data']['LIDAR_TOP']
             lidar_data = nusc.get('sample_data', lidar_token)
             ego_pose = nusc.get('ego_pose', lidar_data['ego_pose_token'])
             
             ego_x, ego_y = ego_pose['translation'][0], ego_pose['translation'][1]
-            ego_vx, ego_vy = 0, 0 # 默认为 0
+            ego_vx, ego_vy = 0, 0 
             
-            # 尝试获取上一帧来计算速度
+            
             if sample['prev']:
                 prev_sample = nusc.get('sample', sample['prev'])
                 prev_timestamp = prev_sample['timestamp'] / 1e6
                 dt = timestamp - prev_timestamp
                 
-                # 获取上一帧的 Ego 位置
+                
                 prev_lidar = nusc.get('sample_data', prev_sample['data']['LIDAR_TOP'])
                 prev_pose = nusc.get('ego_pose', prev_lidar['ego_pose_token'])
                 
@@ -72,31 +68,29 @@ def extract_nuscenes():
                 'vx': ego_vx, 'vy': ego_vy # ✅ 现在有速度了
             })
 
-            # -------------------------------------------------
-            # 2. 提取周围障碍物并计算速度
-            # -------------------------------------------------
+           
             for ann_token in sample['anns']:
                 ann = nusc.get('sample_annotation', ann_token)
                 
-                # 提取基础信息
+                
                 track_id = ann['instance_token'][:8]
                 category = ann['category_name']
                 x, y, z = ann['translation']
                 
-                # 类型映射
+               
                 if 'vehicle' in category: obj_type = 'TYPE_VEHICLE'
                 elif 'pedestrian' in category: obj_type = 'TYPE_PEDESTRIAN'
                 elif 'cycle' in category: obj_type = 'TYPE_CYCLIST'
                 else: obj_type = 'TYPE_OTHER'
                 
-                # 核心逻辑：计算差分速度
+               
                 vx, vy = 0, 0
                 
-                # 检查这个物体有没有“上一帧” (ann['prev'])
+          
                 if ann['prev']:
                     prev_ann = nusc.get('sample_annotation', ann['prev'])
                     
-                    # 我们需要找到上一帧的时间戳 (通过上一帧所属的 sample)
+                    
                     prev_sample_token_for_ann = prev_ann['sample_token']
                     prev_sample_for_ann = nusc.get('sample', prev_sample_token_for_ann)
                     prev_time = prev_sample_for_ann['timestamp'] / 1e6
@@ -121,11 +115,11 @@ def extract_nuscenes():
                     'vx': vx, 'vy': vy # ✅ 现在有速度了
                 })
 
-            # 指向下一帧
+            
             sample_token = sample['next']
             frame_idx += 1
 
-    # 保存
+    
     if not os.path.exists("output"):
         os.makedirs("output")
     
